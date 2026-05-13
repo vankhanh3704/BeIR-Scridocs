@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SciFind — SCIDOCS IR System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & ROOT ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+:root {
+  --bg:       #f4f1ec;
+  --ink:      #1a1714;
+  --paper:    #faf8f4;
+  --border:   #d8d0c4;
+  --muted:    #8a8278;
+  --accent:   #c23b22;
+
+  --tv1:      #1a3a6e;
+  --tv2:      #1a5c3a;
+  --tv3:      #6b3a1a;
+  --compare:  #3a1a6b;
+
+  --tv1-bg:   #e8eef8;
+  --tv2-bg:   #e8f4ee;
+  --tv3-bg:   #f4ede8;
+  --compare-bg:#eee8f4;
+
+  --font-display: 'Syne', sans-serif;
+  --font-mono:    'Syne Mono', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-display);
+  min-height: 100vh;
+}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--accent); }
+
+.header-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #888;
+  display: flex;
+  gap: 1.5rem;
+}
+.header-meta b { color: var(--bg); }
+
+/* ── LAYOUT ───────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+/* ── SIDEBAR ──────────────────────────────────────────────── */
+.sidebar {
+  background: var(--paper);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sb-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+.method-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  border-radius: 4px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 3px;
+}
+.method-btn:hover { background: var(--bg); color: var(--ink); }
+.method-btn.active { border-color: var(--border); color: var(--ink); }
+.method-btn[data-m="tfidf"].active    { background: var(--tv1-bg); color: var(--tv1); border-color: var(--tv1); }
+.method-btn[data-m="boolean"].active  { background: var(--tv1-bg); color: var(--tv1); border-color: var(--tv1); }
+.method-btn[data-m="lsa"].active      { background: var(--tv2-bg); color: var(--tv2); border-color: var(--tv2); }
+.method-btn[data-m="bm25"].active     { background: var(--tv3-bg); color: var(--tv3); border-color: var(--tv3); }
+.method-btn[data-m="all"].active      { background: var(--compare-bg); color: var(--compare); border-color: var(--compare); }
+
+.method-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.method-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.bool-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.bool-btn {
+  padding: 5px 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  transition: all 0.15s;
+}
+.bool-btn.active, .bool-btn:hover {
+  background: var(--tv1);
+  color: white;
+  border-color: var(--tv1);
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 12px;
+  border-radius: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+}
+.stat-row:last-child { border: none; }
+.stat-val { font-weight: 700; color: var(--ink); }
+
+/* ── CONTENT ──────────────────────────────────────────────── */
+.content { padding: 2rem 2.5rem; }
+
+/* Search bar */
+.search-area { margin-bottom: 2rem; }
+.search-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.search-row {
+  display: flex;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+.search-input {
+  flex: 1;
+  padding: 0.85rem 1.1rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.search-input::placeholder { color: var(--muted); font-weight: 400; }
+.search-btn {
+  padding: 0.85rem 1.75rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.search-btn:hover { background: var(--accent); }
+
+/* Result header */
+.res-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.res-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.res-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+/* Cards */
+.results { display: flex; flex-direction: column; gap: 8px; }
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  animation: up 0.2s ease both;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--ink); }
+
+@keyframes up {
+  from { opacity: 0; transform: translateY(5px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+.card-top {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 0.75rem;
+  align-items: start;
+  margin-bottom: 0.5rem;
+}
+.card-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 2px;
+  font-weight: 600;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.card-score { text-align: right; }
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  display: block;
+}
+.score-lbl {
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.m-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+.id-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.abstract {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+  line-height: 1.6;
+}
+
+/* Compare grid */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+.compare-col {}
+.compare-hdr {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.4rem 0;
+  border-bottom: 2px solid;
+  margin-bottom: 0.6rem;
+}
+.compare-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 5px;
+  animation: up 0.2s ease both;
+}
+.compare-title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0.2rem 0;
+}
+.compare-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.3rem;
+}
+.compare-rank {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.compare-score {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--muted);
+}
+.empty-mark {
+  font-size: 64px;
+  font-weight: 800;
+  opacity: 0.08;
+  display: block;
+  line-height: 1;
+  margin-bottom: 1rem;
+  letter-spacing: -4px;
+}
+.empty-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-top: 0.5rem;
+  line-height: 1.8;
+}
+
+/* Eval banner */
+.eval-bar {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.6rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.eval-bar span { color: #888; }
+.eval-bar b { color: var(--bg); }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Sci<span>Find</span></div>
+  <div class="header-meta">
+    <span>SCIDOCS · <b id="hdr-size">—</b> papers</span>
+    <span>IR Methods: <b>TV1 · TV2 · TV3</b></span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div>
+      <span class="sb-label">Phương pháp</span>
+
+      <button class="method-btn active" data-m="tfidf" onclick="setMethod(this)">
+        <span class="method-dot" style="background:var(--tv1)"></span>
+        TF-IDF
+        <span class="method-tag" style="background:var(--tv1-bg);color:var(--tv1)">TV1</span>
+      </button>
+      <button class="method-btn" data-m="boolean" onclick="setMethod(this)">
+        <span class="method-dot" style="background:var(--tv1)"></span>
+        Boolean Search
+        <span class="method-tag" style="background:var(--tv1-bg);color:var(--tv1)">TV1</span>
+      </button>
+      <button class="method-btn" data-m="lsa" onclick="setMethod(this)">
+        <span class="method-dot" style="background:var(--tv2)"></span>
+        LSA / SVD
+        <span class="method-tag" style="background:var(--tv2-bg);color:var(--tv2)">TV2</span>
+      </button>
+      <button class="method-btn" data-m="bm25" onclick="setMethod(this)">
+        <span class="method-dot" style="background:var(--tv3)"></span>
+        BM25
+        <span class="method-tag" style="background:var(--tv3-bg);color:var(--tv3)">TV3</span>
+      </button>
+      <button class="method-btn" data-m="all" onclick="setMethod(this)">
+        <span class="method-dot" style="background:var(--compare)"></span>
+        So sánh tất cả
+        <span class="method-tag" style="background:var(--compare-bg);color:var(--compare)">ALL</span>
+      </button>
+    </div>
+
+    <!-- Boolean mode -->
+    <div id="bool-section" style="display:none">
+      <span class="sb-label">Boolean Mode</span>
+      <div class="bool-row">
+        <button class="bool-btn active" data-mode="AND" onclick="setBool(this)">AND</button>
+        <button class="bool-btn" data-mode="OR"  onclick="setBool(this)">OR</button>
+        <button class="bool-btn" data-mode="NOT" onclick="setBool(this)">NOT</button>
+      </div>
+    </div>
+
+    <div>
+      <span class="sb-label">Cài đặt</span>
+      <select class="filter-select" id="topk">
+        <option value="5">Top 5 kết quả</option>
+        <option value="10" selected>Top 10 kết quả</option>
+        <option value="20">Top 20 kết quả</option>
+      </select>
+    </div>
+
+    <div>
+      <span class="sb-label">Truy vấn cuối</span>
+      <div class="stat-row"><span>Method</span><span class="stat-val" id="st-method">—</span></div>
+      <div class="stat-row"><span>Kết quả</span><span class="stat-val" id="st-count">—</span></div>
+      <div class="stat-row"><span>Thời gian</span><span class="stat-val" id="st-time">—</span></div>
+    </div>
+
+    <!-- Eval summary -->
+    <div>
+      <span class="sb-label">Evaluation (SCIDOCS)</span>
+      <div class="stat-row"><span>TF-IDF NDCG@10</span><span class="stat-val" style="color:var(--tv1)">0.141</span></div>
+      <div class="stat-row"><span>TF-IDF MAP</span><span class="stat-val" style="color:var(--tv1)">0.090</span></div>
+      <div class="stat-row"><span>BM25 NDCG@10</span><span class="stat-val" style="color:var(--tv3)">0.161</span></div>
+      <div class="stat-row"><span>BM25 MAP</span><span class="stat-val" style="color:var(--tv3)">0.103</span></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="search-area">
+      <span class="search-label">Nhập query — từ khóa hoặc câu mô tả</span>
+      <div class="search-row">
+        <input class="search-input" id="q"
+               placeholder="Ví dụ: citation recommendation scientific papers..."
+               onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="search-btn" onclick="doSearch()">SEARCH</button>
+      </div>
+    </div>
+
+    <div class="res-hdr">
+      <span class="res-title" id="res-label">Sẵn sàng</span>
+      <span class="res-meta" id="res-meta">SCIDOCS · 25,657 papers</span>
+    </div>
+
+    <div id="results">
+      <div class="empty">
+        <span class="empty-mark">IR</span>
+        <div>Nhập query để tìm kiếm paper khoa học</div>
+        <div class="empty-sub">
+          citation recommendation · information retrieval neural network<br>
+          graph based document ranking · knowledge graph embedding
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────
+let curMethod = 'tfidf';
+let boolMode  = 'AND';
+
+const COLORS = {
+  tfidf:   'var(--tv1)',
+  boolean: 'var(--tv1)',
+  lsa:     'var(--tv2)',
+  bm25:    'var(--tv3)',
+  all:     'var(--compare)',
+};
+const BGCOLORS = {
+  tfidf:   'var(--tv1-bg)',
+  boolean: 'var(--tv1-bg)',
+  lsa:     'var(--tv2-bg)',
+  bm25:    'var(--tv3-bg)',
+};
+const LABELS = {
+  tfidf:   'TF-IDF',
+  boolean: 'Boolean',
+  lsa:     'LSA/SVD',
+  bm25:    'BM25',
+};
+
+// ── Init ──────────────────────────────────────────────────
+fetch('/api/stats').then(r=>r.json()).then(d=>{
+  document.getElementById('hdr-size').textContent =
+    d.corpus_size.toLocaleString();
+}).catch(()=>{});
+
+// ── Method switching ──────────────────────────────────────
+function setMethod(el) {
+  curMethod = el.dataset.m;
+  document.querySelectorAll('.method-btn')
+    .forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('bool-section').style.display =
+    curMethod === 'boolean' ? 'block' : 'none';
+  document.getElementById('st-method').textContent =
+    LABELS[curMethod] || curMethod;
+  const q = document.getElementById('q').value.trim();
+  if (q) doSearch();
+}
+
+function setBool(el) {
+  boolMode = el.dataset.mode;
+  document.querySelectorAll('.bool-btn')
+    .forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const q = document.getElementById('q').value.trim();
+  if (q) doSearch();
+}
+
+// ── Search ────────────────────────────────────────────────
+async function doSearch() {
+  const q    = document.getElementById('q').value.trim();
+  const topk = document.getElementById('topk').value;
+  if (!q) return;
+
+  document.getElementById('res-label').textContent = 'Đang tìm kiếm...';
+
+  const params = new URLSearchParams({
+    q, method: curMethod, k: topk, mode: boolMode
+  });
+
+  try {
+    const res  = await fetch(`/api/search?${params}`);
+    const data = await res.json();
+
+    if (curMethod === 'all') {
+      renderCompare(data, q);
+    } else {
+      renderResults(data.results || [], curMethod, data.time_ms, q);
+    }
+
+    const cnt = curMethod === 'all'
+      ? '4×' + topk
+      : (data.results?.length || 0);
+
+    document.getElementById('st-count').textContent = cnt;
+    document.getElementById('st-time').textContent  =
+      (data.time_ms || '?') + 'ms';
+    document.getElementById('res-meta').textContent =
+      `SCIDOCS · query: "${q.slice(0,30)}${q.length>30?'…':''}"`;
+
+  } catch(e) {
+    document.getElementById('results').innerHTML =
+      `<div class="empty"><div style="color:var(--accent)">Error: ${e.message}</div></div>`;
+  }
+}
+
+// ── Render single method ──────────────────────────────────
+function renderResults(papers, method, ms, query) {
+  const color = COLORS[method] || 'var(--ink)';
+  const label = LABELS[method] || method;
+
+  document.getElementById('res-label').textContent =
+    `${label} — "${query}"`;
+
+  if (!papers.length) {
+    document.getElementById('results').innerHTML =
+      `<div class="empty"><span class="empty-mark">∅</span>
+       <div>Không tìm thấy kết quả</div>
+       <div class="empty-sub">Thử đổi mode hoặc dùng từ khóa khác</div></div>`;
+    return;
+  }
+
+  const isBoolean = method.startsWith('Boolean') || method === 'boolean';
+
+  document.getElementById('results').innerHTML = papers.map((p, i) => `
+    <div class="card" style="animation-delay:${i*25}ms">
+      <div class="card-top">
+        <span class="card-num">${String(p.rank).padStart(2,'0')}</span>
+        <span class="card-title">${escHtml(p.title)}</span>
+        <div class="card-score">
+          <span class="score-val" style="color:${color}">
+            ${formatScore(p.score, isBoolean)}
+          </span>
+          <span class="score-lbl">${isBoolean ? 'match' : 'score'}</span>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="m-tag" style="background:${color};color:#fff">${label}</span>
+        <span class="id-tag">${p.id.slice(0,16)}…</span>
+      </div>
+      <div class="abstract">${escHtml(p.abstract)}</div>
+    </div>`).join('');
+}
+
+// ── Render compare ────────────────────────────────────────
+function renderCompare(data, query) {
+  document.getElementById('res-label').textContent =
+    `So sánh 4 phương pháp — "${query}"`;
+
+  const cols = [
+    { key:'tfidf',   label:'TV1 — TF-IDF',   color:'var(--tv1)',    border:'var(--tv1)' },
+    { key:'boolean', label:'TV1 — Boolean',   color:'var(--tv1)',    border:'var(--tv1)' },
+    { key:'lsa',     label:'TV2 — LSA/SVD',   color:'var(--tv2)',    border:'var(--tv2)' },
+    { key:'bm25',    label:'TV3 — BM25',       color:'var(--tv3)',    border:'var(--tv3)' },
+  ];
+
+  document.getElementById('results').innerHTML =
+    `<div class="compare-grid">${cols.map(col => {
+      const papers = (data[col.key]?.results || []).slice(0,5);
+      return `<div class="compare-col">
+        <div class="compare-hdr" style="color:${col.color};border-color:${col.border}">
+          ${col.label}
+        </div>
+        ${papers.length ? papers.map((p, i) => `
+          <div class="compare-card" style="animation-delay:${i*20}ms">
+            <div class="compare-rank">#${p.rank}</div>
+            <div class="compare-title">${escHtml(p.title.slice(0,70))}${p.title.length>70?'…':''}</div>
+            <div class="compare-footer">
+              <span class="id-tag">${p.id.slice(0,12)}…</span>
+              <span class="compare-score" style="color:${col.color}">
+                ${formatScore(p.score, col.key === 'boolean')}
+              </span>
+            </div>
+          </div>`).join('')
+        : '<div style="font-size:12px;color:var(--muted);padding:.5rem 0">Không có kết quả</div>'}
+      </div>`;
+    }).join('')}</div>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function formatScore(score, isBoolean) {
+  if (score === null || score === undefined) return '—';
+  if (isBoolean) return score.toFixed(0);
+  return score > 1 ? score.toFixed(2) : (score * 100).toFixed(1) + '%';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

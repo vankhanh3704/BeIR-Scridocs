@@ -1,0 +1,48 @@
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Jupyter 
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data files 
+data/raw/*.parquet
+data/raw/*.csv
+data/raw/*.json
+data/processed/*.parquet
+data/processed/*.csv
+data/dicts/*.pkl
+
+# Model files 
+models/*.pkl
+models/*.npy
+models/*.index
+models/*.csv
+
+
+outputs/*.csv
+outputs/*.png
+outputs/*.jpg
+
+
+.DS_Store
+Thumbs.db
+.env
+
+
+.vscode/
+.idea/
+*.swp
+
+
+*.log
