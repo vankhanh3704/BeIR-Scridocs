@@ -116,7 +116,6 @@ header {
 .method-btn:hover { background: var(--bg); color: var(--ink); }
 .method-btn.active { border-color: var(--border); color: var(--ink); }
 .method-btn[data-m="tfidf"].active    { background: var(--tv1-bg); color: var(--tv1); border-color: var(--tv1); }
-.method-btn[data-m="boolean"].active  { background: var(--tv1-bg); color: var(--tv1); border-color: var(--tv1); }
 .method-btn[data-m="lsa"].active      { background: var(--tv2-bg); color: var(--tv2); border-color: var(--tv2); }
 .method-btn[data-m="bm25"].active     { background: var(--tv3-bg); color: var(--tv3); border-color: var(--tv3); }
 .method-btn[data-m="all"].active      { background: var(--compare-bg); color: var(--compare); border-color: var(--compare); }
@@ -134,29 +133,7 @@ header {
   font-weight: 600;
 }
 
-.bool-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-.bool-btn {
-  padding: 5px 0;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  border-radius: 3px;
-  font-family: var(--font-mono);
-  transition: all 0.15s;
-}
-.bool-btn.active, .bool-btn:hover {
-  background: var(--tv1);
-  color: white;
-  border-color: var(--tv1);
-}
+
 
 .filter-select {
   width: 100%;
@@ -429,10 +406,6 @@ header {
         TF-IDF
         <span class="method-tag" style="background:var(--tv1-bg);color:var(--tv1)">TV1</span>
       </button>
-      <button class="method-btn" data-m="boolean" onclick="setMethod(this)">
-        <span class="method-dot" style="background:var(--tv1)"></span>
-        Boolean Search
-        <span class="method-tag" style="background:var(--tv1-bg);color:var(--tv1)">TV1</span>
       </button>
       <button class="method-btn" data-m="lsa" onclick="setMethod(this)">
         <span class="method-dot" style="background:var(--tv2)"></span>
@@ -451,15 +424,7 @@ header {
       </button>
     </div>
 
-    <!-- Boolean mode -->
-    <div id="bool-section" style="display:none">
-      <span class="sb-label">Boolean Mode</span>
-      <div class="bool-row">
-        <button class="bool-btn active" data-mode="AND" onclick="setBool(this)">AND</button>
-        <button class="bool-btn" data-mode="OR"  onclick="setBool(this)">OR</button>
-        <button class="bool-btn" data-mode="NOT" onclick="setBool(this)">NOT</button>
-      </div>
-    </div>
+    
 
     <div>
       <span class="sb-label">Cài đặt</span>
@@ -522,24 +487,21 @@ header {
 <script>
 // ── State ─────────────────────────────────────────────────
 let curMethod = 'tfidf';
-let boolMode  = 'AND';
 
 const COLORS = {
   tfidf:   'var(--tv1)',
-  boolean: 'var(--tv1)',
+  
   lsa:     'var(--tv2)',
   bm25:    'var(--tv3)',
   all:     'var(--compare)',
 };
 const BGCOLORS = {
   tfidf:   'var(--tv1-bg)',
-  boolean: 'var(--tv1-bg)',
   lsa:     'var(--tv2-bg)',
   bm25:    'var(--tv3-bg)',
 };
 const LABELS = {
   tfidf:   'TF-IDF',
-  boolean: 'Boolean',
   lsa:     'LSA/SVD',
   bm25:    'BM25',
   all:     'All',
@@ -561,22 +523,12 @@ function setMethod(el) {
   document.querySelectorAll('.method-btn')
     .forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('bool-section').style.display =
-    curMethod === 'boolean' ? 'block' : 'none';
   document.getElementById('st-method').textContent =
     LABELS[curMethod] || curMethod;
   const q = document.getElementById('q').value.trim();
   if (q) doSearch();
 }
 
-function setBool(el) {
-  boolMode = el.dataset.mode;
-  document.querySelectorAll('.bool-btn')
-    .forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  const q = document.getElementById('q').value.trim();
-  if (q) doSearch();
-}
 
 // ── Search ────────────────────────────────────────────────
 async function doSearch() {
@@ -587,7 +539,7 @@ async function doSearch() {
   document.getElementById('res-label').textContent = 'Đang tìm kiếm...';
 
   const params = new URLSearchParams({
-    q, method: curMethod, k: topk, mode: boolMode
+    q, method: curMethod, k: topk
   });
 
   try {
@@ -665,7 +617,6 @@ function renderCompare(data, query) {
 
   const cols = [
     { key:'tfidf',   label:'TV1 — TF-IDF',   color:'var(--tv1)',    border:'var(--tv1)' },
-    { key:'boolean', label:'TV1 — Boolean',   color:'var(--tv1)',    border:'var(--tv1)' },
     { key:'lsa',     label:'TV2 — LSA/SVD',   color:'var(--tv2)',    border:'var(--tv2)' },
     { key:'bm25',    label:'TV3 — BM25',       color:'var(--tv3)',    border:'var(--tv3)' },
   ];

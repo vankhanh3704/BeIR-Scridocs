@@ -294,60 +294,6 @@ def search_tfidf(query: str, top_k=10) -> dict:
     }
 
 
-def search_boolean(query: str, mode="AND", top_k=10) -> dict:
-    t0 = time.time()
-    mode = str(mode or "AND").upper()
-    tokens = preprocess_query(query).split()
-    if not tokens:
-        return _empty(f"Boolean-{mode}", t0)
-
-    valid_tokens = [t for t in tokens if t in inverted_index]
-    ranking_tokens = valid_tokens
-
-    if mode == "AND":
-        if len(valid_tokens) < len(tokens):
-            return _empty("Boolean-AND", t0)
-        match_idx = set.intersection(*[inverted_index[t] for t in valid_tokens])
-    elif mode == "OR":
-        match_idx = set.union(*[inverted_index[t] for t in valid_tokens]) if valid_tokens else set()
-    elif mode == "NOT":
-        include = tokens[0]
-        if include not in inverted_index:
-            return _empty("Boolean-NOT", t0)
-        match_idx = set(inverted_index[include])
-        for excluded in tokens[1:]:
-            match_idx -= inverted_index.get(excluded, set())
-        ranking_tokens = [include]
-    else:
-        return _empty(f"Boolean-{mode}", t0, error=f"Invalid boolean mode: {mode}")
-
-    if not match_idx:
-        return _empty(f"Boolean-{mode}", t0)
-
-    match_idx = list(match_idx)
-    rank_scores = np.zeros(len(match_idx))
-    if ranking_tokens:
-        q_vec = tfidf_vec.transform([" ".join(ranking_tokens)])
-        rank_scores = cosine_similarity(q_vec, tfidf_mat[match_idx]).flatten()
-
-    res = df.iloc[match_idx][["id", "title", "abstract"]].copy()
-    res["_rank_score"] = rank_scores
-    res["_matches"] = res.index.map(
-        lambda i: sum(1 for token in ranking_tokens if i in inverted_index.get(token, set()))
-    )
-    res = res.sort_values(
-        ["_rank_score", "_matches", "id"],
-        ascending=[False, False, True],
-    ).head(top_k)
-    scores = res["_matches"].tolist()
-    res = res.drop(columns=["_rank_score", "_matches"])
-
-    return {
-        "results": _fmt(res, scores, f"Boolean-{mode}"),
-        "method": f"Boolean-{mode}",
-        "time_ms": round((time.time() - t0) * 1000, 1),
-    }
-
 
 # ============================================================
 # TV2 SEARCH
@@ -435,7 +381,6 @@ def search_all(query: str, top_k=5) -> dict:
     t0 = time.time()
     result = {
         "tfidf": search_tfidf(query, top_k),
-        "boolean": search_boolean(query, "AND", top_k),
         "lsa": search_lsa(query, top_k),
         "bm25": search_bm25(query, top_k),
         "method": "ALL",
