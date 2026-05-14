@@ -480,10 +480,10 @@ header {
     <!-- Eval summary -->
     <div>
       <span class="sb-label">Evaluation (SCIDOCS)</span>
-      <div class="stat-row"><span>TF-IDF NDCG@10</span><span class="stat-val" style="color:var(--tv1)">0.141</span></div>
-      <div class="stat-row"><span>TF-IDF MAP</span><span class="stat-val" style="color:var(--tv1)">0.090</span></div>
-      <div class="stat-row"><span>BM25 NDCG@10</span><span class="stat-val" style="color:var(--tv3)">0.161</span></div>
-      <div class="stat-row"><span>BM25 MAP</span><span class="stat-val" style="color:var(--tv3)">0.103</span></div>
+      <div class="stat-row"><span>TF-IDF NDCG@10</span><span class="stat-val" id="eval-tfidf-ndcg" style="color:var(--tv1)">—</span></div>
+      <div class="stat-row"><span>TF-IDF MAP</span><span class="stat-val" id="eval-tfidf-map" style="color:var(--tv1)">—</span></div>
+      <div class="stat-row"><span>BM25 NDCG@10</span><span class="stat-val" id="eval-bm25-ndcg" style="color:var(--tv3)">—</span></div>
+      <div class="stat-row"><span>BM25 Recall@10</span><span class="stat-val" id="eval-bm25-recall" style="color:var(--tv3)">—</span></div>
     </div>
   </div>
 
@@ -542,12 +542,17 @@ const LABELS = {
   boolean: 'Boolean',
   lsa:     'LSA/SVD',
   bm25:    'BM25',
+  all:     'All',
 };
 
 // ── Init ──────────────────────────────────────────────────
 fetch('/api/stats').then(r=>r.json()).then(d=>{
   document.getElementById('hdr-size').textContent =
     d.corpus_size.toLocaleString();
+  setText('eval-tfidf-ndcg', fmtMetric(d.evaluation?.tfidf?.ndcg10));
+  setText('eval-tfidf-map', fmtMetric(d.evaluation?.tfidf?.map));
+  setText('eval-bm25-ndcg', fmtMetric(d.evaluation?.bm25?.ndcg10));
+  setText('eval-bm25-recall', fmtMetric(d.evaluation?.bm25?.r10));
 }).catch(()=>{});
 
 // ── Method switching ──────────────────────────────────────
@@ -588,6 +593,9 @@ async function doSearch() {
   try {
     const res  = await fetch(`/api/search?${params}`);
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
 
     if (curMethod === 'all') {
       renderCompare(data, q);
@@ -596,12 +604,13 @@ async function doSearch() {
     }
 
     const cnt = curMethod === 'all'
-      ? '4×' + topk
+      ? ['tfidf','boolean','lsa','bm25']
+          .reduce((n, key) => n + (data[key]?.results?.length || 0), 0)
       : (data.results?.length || 0);
 
     document.getElementById('st-count').textContent = cnt;
     document.getElementById('st-time').textContent  =
-      (data.time_ms || '?') + 'ms';
+      (data.time_ms ?? '?') + 'ms';
     document.getElementById('res-meta').textContent =
       `SCIDOCS · query: "${q.slice(0,30)}${q.length>30?'…':''}"`;
 
@@ -689,6 +698,16 @@ function formatScore(score, isBoolean) {
   if (score === null || score === undefined) return '—';
   if (isBoolean) return score.toFixed(0);
   return score > 1 ? score.toFixed(2) : (score * 100).toFixed(1) + '%';
+}
+
+function fmtMetric(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toFixed(4) : '—';
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
 }
 
 function escHtml(str) {

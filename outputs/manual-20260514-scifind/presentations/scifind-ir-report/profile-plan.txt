@@ -1,0 +1,24 @@
+task mode: create
+primary deck-profile: engineering-platform
+secondary gates: analytics narrative, academic reporting
+required proof objects:
+- dataset anatomy visual
+- retrieval method map
+- preprocessing workflow
+- evaluation metric matrix
+- metric charts for TF-IDF, LSA/SVD, BM25
+- app/interface visual
+- future hybrid retrieval roadmap
+source/asset requirements:
+- Use project metrics from local evaluation files and report content.
+- Use generated citation-network and UI visual assets; no unofficial logos.
+brand authenticity constraints:
+- Use text treatment "SciFind" only as the local project name.
+- Do not fabricate BEIR, SCIDOCS, or institutional logos.
+profile-specific QA gates:
+- Technical labels must be precise.
+- Diagrams must use clear left-to-right flow and consistent containment.
+- Metrics must match the reported values.
+known missing inputs:
+- No user-supplied visual template.
+- Browser screenshot is unavailable through the current toolset, so a faithful static UI visual is generated from the app's layout/content.

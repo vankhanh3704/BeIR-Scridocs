@@ -28,9 +28,17 @@ scidocs_webapp/
 ## Setup
 
 ```bash
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 python app.py
-# Truy cập: http://localhost:5000
+# Truy cập: http://localhost:5001
+```
+
+Nếu cần đổi cổng:
+
+```bash
+PORT=5000 python app.py
 ```
 
 ## Lấy model files
@@ -59,3 +67,4 @@ Từ notebook TV3 (bm25.ipynb):
 - Lần sau load từ disk, không cần build lại
 - LSA cần copy models/lsa_model.pkl từ TV2 notebook
 - BM25 cần copy models/bm25_model.pkl và bm25_doc_ids.csv từ TV3 notebook
+- Sidebar evaluation đọc từ `models/tv1_evaluation.csv` và `models/bm25_eval_metrics.csv` nếu có.

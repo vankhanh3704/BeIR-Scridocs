@@ -1,0 +1,39 @@
+slide size: 1280x720
+background: warm paper (#F7F2EA) with deep ink panels (#171512) for chapter/hero slides
+type:
+- claims: Georgia or Aptos Display, large, high contrast
+- labels/body: Aptos, compact and readable
+- metrics/code: Aptos Mono
+palette:
+- ink #171512
+- paper #F7F2EA
+- bone #EFE7DA
+- muted #7A756C
+- blue #245B8E for TF-IDF
+- green #167052 for LSA/SVD
+- copper #C4512B for BM25
+- violet #5C477A for compare/all
+chart grammar:
+- direct labels, no heavy legends
+- bars from left baseline, metric values at bar end
+- one accent per method
+diagram grammar:
+- left-to-right workflow
+- thin rules and filled stage nodes
+- no decorative arrowheads unless flow direction matters
+footer grammar:
+- small source text at bottom-left; slide number bottom-right
+layout families:
+- cover with image rail
+- data anatomy
+- method matrix
+- workflow lanes
+- metric matrix
+- chart-first analytics
+- interface proof
+- roadmap
+banned motifs:
+- generic template card grids
+- fake institutional logos
+- decorative gradient orbs
+- dense paragraph dumps
