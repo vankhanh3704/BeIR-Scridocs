@@ -30,11 +30,6 @@ models/*.index
 models/*.csv
 
 
-outputs/*.csv
-outputs/*.png
-outputs/*.jpg
-
-
 .DS_Store
 Thumbs.db
 .env
