@@ -357,7 +357,9 @@ def search_lsa(query: str, top_k=10) -> dict:
         return _empty("LSA", error="LSA model not loaded")
 
     t0 = time.time()
-    q_proc = preprocess_lsa_query(query)
+    
+    q_proc = preprocess_query(query) 
+    
     if not q_proc:
         return _empty("LSA", t0)
 
@@ -387,7 +389,6 @@ def search_lsa(query: str, top_k=10) -> dict:
         "method": "LSA",
         "time_ms": round((time.time() - t0) * 1000, 1),
     }
-
 
 # ============================================================
 # TV3 SEARCH
