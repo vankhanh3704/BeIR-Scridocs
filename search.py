@@ -205,7 +205,9 @@ def _fmt(df_slice: pd.DataFrame, scores, method: str) -> list[dict]:
     return results
 
 
-def _empty(method: str, t0: float | None = None, error: str | None = None) -> dict:
+from typing import Union
+
+def _empty(method: str, t0: Union[float, None] = None, error: Union[str, None] = None) -> dict:
     payload = {
         "results": [],
         "method": method,
