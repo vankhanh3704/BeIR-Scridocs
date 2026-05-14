@@ -88,16 +88,33 @@ CUSTOM_STOP = {
     "furthermor", "present", "work", "studi",
     "experiment", "evalu", "use", "new", "high",
 }
+CUSTOM_STOP_BM25 = {
+    "paper", "propos", "method", "approach", "result",
+    "show", "base", "also", "howev", "therefor", "thu",
+    "furthermor", "present", "work", "studi",
+    "experiment", "evalu",
+}
 PATTERN_NON_ALPHA = re.compile(r"[^a-z\s]")
+PATTERN_BM25_CLEAN = re.compile(r"[^a-z0-9\s]")
+PATTERN_BM25_SPACE = re.compile(r"\s+")
 PATTERN_LSA_QUERY = re.compile(r"[^a-zA-Z0-9\s\-\.\,]")
 
 
 def preprocess_query(query: str) -> str:
     query = str(query).lower()
     query = PATTERN_NON_ALPHA.sub(" ", query)
-    tokens = [t for t in query.split() if t not in STOP and len(t) > 2]
+    tokens = [t for t in query.split() if t not in STOP and len(t) > 1]
     stemmed = [PS.stem(t) for t in tokens]
     return " ".join(t for t in stemmed if t not in CUSTOM_STOP)
+
+
+def preprocess_bm25_query(query: str) -> list[str]:
+    text = str(query).lower()
+    text = PATTERN_BM25_CLEAN.sub(" ", text)
+    text = PATTERN_BM25_SPACE.sub(" ", text).strip()
+    tokens = [t for t in text.split() if t not in STOP and len(t) > 1]
+    stemmed = [PS.stem(t) for t in tokens]
+    return [t for t in stemmed if t not in CUSTOM_STOP_BM25]
 
 
 def preprocess_lsa_query(query: str) -> str:
@@ -380,7 +397,7 @@ def search_bm25(query: str, top_k=10) -> dict:
         return _empty("BM25", error="BM25 model not loaded")
 
     t0 = time.time()
-    tokens = preprocess_query(query).split()
+    tokens = preprocess_bm25_query(query)
     if not tokens:
         return _empty("BM25", t0)
 
