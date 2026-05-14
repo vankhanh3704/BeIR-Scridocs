@@ -5,7 +5,6 @@ import pickle
 import re
 import time
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -206,7 +205,9 @@ def _fmt(df_slice: pd.DataFrame, scores, method: str) -> list[dict]:
     return results
 
 
-def _empty(method: str, t0: Optional[float] = None, error: Optional[str] = None) -> dict:
+from typing import Union
+
+def _empty(method: str, t0: Union[float, None] = None, error: Union[str, None] = None) -> dict:
     payload = {
         "results": [],
         "method": method,

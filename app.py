@@ -2,7 +2,7 @@
 # app.py — Flask Web Application
 # ============================================================
 from flask import Flask, render_template, request, jsonify
-from apps.search import (
+from search import (
     search_tfidf, search_boolean,
     search_lsa, search_bm25,
     search_all, get_stats
