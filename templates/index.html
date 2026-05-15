@@ -442,14 +442,7 @@ header {
       <div class="stat-row"><span>Thời gian</span><span class="stat-val" id="st-time">—</span></div>
     </div>
 
-    <!-- Eval summary -->
-    <div>
-      <span class="sb-label">Evaluation (SCIDOCS)</span>
-      <div class="stat-row"><span>TF-IDF NDCG@10</span><span class="stat-val" id="eval-tfidf-ndcg" style="color:var(--tv1)">—</span></div>
-      <div class="stat-row"><span>TF-IDF MAP</span><span class="stat-val" id="eval-tfidf-map" style="color:var(--tv1)">—</span></div>
-      <div class="stat-row"><span>BM25 NDCG@10</span><span class="stat-val" id="eval-bm25-ndcg" style="color:var(--tv3)">—</span></div>
-      <div class="stat-row"><span>BM25 Recall@10</span><span class="stat-val" id="eval-bm25-recall" style="color:var(--tv3)">—</span></div>
-    </div>
+   
   </div>
 
   <!-- CONTENT -->
@@ -613,7 +606,7 @@ function renderResults(papers, method, ms, query) {
 // ── Render compare ────────────────────────────────────────
 function renderCompare(data, query) {
   document.getElementById('res-label').textContent =
-    `So sánh 4 phương pháp — "${query}"`;
+    `So sánh 3 phương pháp — "${query}"`;
 
   const cols = [
     { key:'tfidf',   label:'TV1 — TF-IDF',   color:'var(--tv1)',    border:'var(--tv1)' },
